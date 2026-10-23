@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}User: {{ user_obj.username }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">User: {{ user_obj.username }}</h1>
+    <p style="color: var(--text-muted); font-size: 0.875rem;">UUID: <span style="font-family: monospace;">{{ user_obj.id }}</span></p>
+  </div>
+  <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
+</div>
+
+{% if message %}
+<div class="alert alert-success">{{ message }}</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+  <div class="stat-card">
+    <h3 style="margin-bottom: 16px;">Account Details</h3>
+    <table style="width: 100%;">
+      <tr>
+        <td style="color: var(--text-muted); width: 40%;">Username:</td>
+        <td><strong>{{ user_obj.username }}</strong></td>
+      </tr>
+      <tr>
+        <td style="color: var(--text-muted);">Telegram ID:</td>
+        <td style="font-family: monospace;">{{ user_obj.telegram_id }}</td>
+      </tr>
+      <tr>
+        <td style="color: var(--text-muted);">Timezone:</td>
+        <td>{{ user_obj.timezone }}</td>
+      </tr>
+      <tr>
+        <td style="color: var(--text-muted);">Status:</td>
+        <td>
+          {% if user_obj.is_blocked %}
+          <span class="badge badge-danger">Blocked</span>
+          {% else %}
+          <span class="badge badge-success">Active</span>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td style="color: var(--text-muted);">Created:</td>
+        <td>{{ user_obj.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="stat-card">
+    <h3 style="margin-bottom: 16px;">Re-bind Telegram Account</h3>
+    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 16px;">
+      Change the bound Telegram user ID if the user lost access or transferred accounts.
+    </p>
+    <form method="POST" action="/admin/users/{{ user_obj.id }}/rebind">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-group">
+        <label for="new_telegram_id">New Telegram ID (numeric)</label>
+        <input type="text" id="new_telegram_id" name="new_telegram_id" required pattern="[0-9]+" placeholder="123456789">
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="return confirm('Re-bind this account to the new Telegram ID?');">
+        Update Telegram ID
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="page-header" style="margin-top: 32px; margin-bottom: 16px;">
+  <h2 style="font-size: 1.25rem;">Linked Groups ({{ user_obj.groups|length }})</h2>
+</div>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Chat ID</th>
+        <th>Status</th>
+        <th>Linked At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in user_obj.groups %}
+      <tr>
+        <td><strong>{{ g.title }}</strong></td>
+        <td style="font-family: monospace;">{{ g.chat_id }}</td>
+        <td>
+          {% if g.is_active %}
+          <span class="badge badge-success">Active</span>
+          {% else %}
+          <span class="badge badge-danger">Inactive</span>
+          {% endif %}
+        </td>
+        <td style="color: var(--text-muted); font-size: 0.8125rem;">{{ g.linked_at.strftime('%Y-%m-%d') if g.linked_at else 'N/A' }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" style="text-align: center; color: var(--text-muted);">No linked groups.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

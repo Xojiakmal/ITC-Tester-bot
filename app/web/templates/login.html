@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+<div class="login-card">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 6px;">ITTestBot Admin</h1>
+    <p style="color: var(--text-muted); font-size: 0.875rem;">Authentication required (Password + 2FA TOTP)</p>
+  </div>
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" action="/admin/login">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autocomplete="username" autofocus>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+
+    <div class="form-group">
+      <label for="totp_code">2FA TOTP Code (6 digits)</label>
+      <input type="text" id="totp_code" name="totp_code" required pattern="[0-9]{6}" maxlength="6" placeholder="123456" autocomplete="one-time-code">
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+      Sign In
+    </button>
+  </form>
+</div>
+{% endblock %}

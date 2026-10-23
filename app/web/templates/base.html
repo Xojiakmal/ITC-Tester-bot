@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel{% endblock %} - ITTestBot</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  {% if admin %}
+  <aside class="sidebar">
+    <div class="brand">
+      <span>⚡</span> ITTestBot Admin
+    </div>
+    <ul class="nav-links">
+      <li><a href="/admin/" class="{% if active_tab == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+      <li><a href="/admin/users" class="{% if active_tab == 'users' %}active{% endif %}">👥 Users</a></li>
+      <li><a href="/admin/groups" class="{% if active_tab == 'groups' %}active{% endif %}">📢 Groups</a></li>
+      <li><a href="/admin/questions" class="{% if active_tab == 'questions' %}active{% endif %}">❓ Questions</a></li>
+      <li><a href="/admin/schedules" class="{% if active_tab == 'schedules' %}active{% endif %}">🗓 Schedules</a></li>
+      <li><a href="/admin/audit" class="{% if active_tab == 'audit' %}active{% endif %}">📋 Audit Log</a></li>
+    </ul>
+    <div class="user-box">
+      <div>
+        <div style="font-weight: 600; font-size: 0.875rem;">{{ admin.username }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Administrator</div>
+      </div>
+      <form method="POST" action="/admin/logout">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+      </form>
+    </div>
+  </aside>
+  {% endif %}
+
+  <main class="{% if admin %}content-wrapper{% else %}login-page{% endif %}">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

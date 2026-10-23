@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Schedules Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Schedules Management</h1>
+</div>
+
+{% if message %}
+<div class="alert alert-success">{{ message }}</div>
+{% endif %}
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Schedule Name</th>
+        <th>Owner</th>
+        <th>Target Group</th>
+        <th>Type & Timing</th>
+        <th>Count</th>
+        <th>Status</th>
+        <th>Next Run (UTC)</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in schedules %}
+      <tr>
+        <td><strong>{{ s.name }}</strong></td>
+        <td>
+          {% if s.owner %}
+          <a href="/admin/users/{{ s.owner.id }}" style="color: var(--primary); text-decoration: none;">{{ s.owner.username }}</a>
+          {% else %}
+          <span style="color: var(--text-muted);">N/A</span>
+          {% endif %}
+        </td>
+        <td>{{ s.group.title if s.group else 'N/A' }}</td>
+        <td>
+          <span class="badge badge-info">{{ s.schedule_type }}</span>
+          {% if s.schedule_type == 'recurring' %}
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">{{ s.time_of_day }}</div>
+          {% else %}
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">{{ s.one_time_date }} {{ s.time_of_day }}</div>
+          {% endif %}
+        </td>
+        <td>{{ s.questions_per_run }}</td>
+        <td>
+          {% if s.is_paused %}
+          <span class="badge badge-warning">Paused</span>
+          {% else %}
+          <span class="badge badge-success">Active</span>
+          {% endif %}
+        </td>
+        <td style="font-size: 0.8125rem; font-family: monospace;">
+          {{ s.next_run_at.strftime('%Y-%m-%d %H:%M') if s.next_run_at else 'None' }}
+        </td>
+        <td>
+          <div style="display: flex; gap: 6px;">
+            <form method="POST" action="/admin/schedules/{{ s.id }}/toggle">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              {% if s.is_paused %}
+              <button type="submit" class="btn btn-secondary btn-sm">Resume</button>
+              {% else %}
+              <button type="submit" class="btn btn-secondary btn-sm">Pause</button>
+              {% endif %}
+            </form>
+            <form method="POST" action="/admin/schedules/{{ s.id }}/delete">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this schedule permanently?');">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">No schedules found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

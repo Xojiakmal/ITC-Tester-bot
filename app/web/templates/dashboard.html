@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Dashboard Overview</h1>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-title">Registered Users</div>
+    <div class="stat-value">{{ stats.users }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Linked Groups</div>
+    <div class="stat-value">{{ stats.groups }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Total Questions</div>
+    <div class="stat-value">{{ stats.questions }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Active Schedules</div>
+    <div class="stat-value">{{ stats.schedules }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Executed Runs</div>
+    <div class="stat-value">{{ stats.runs }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Active Sessions</div>
+    <div class="stat-value">{{ stats.active_sessions }}</div>
+  </div>
+</div>
+
+<div class="page-header" style="margin-top: 40px; margin-bottom: 16px;">
+  <h2 style="font-size: 1.25rem;">Recent Admin Audit Events</h2>
+  <a href="/admin/audit" class="btn btn-secondary btn-sm">View All Audit Logs</a>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Timestamp (UTC)</th>
+        <th>Admin</th>
+        <th>Action</th>
+        <th>Target Type</th>
+        <th>Target ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in recent_logs %}
+      <tr>
+        <td style="color: var(--text-muted); font-size: 0.8125rem;">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td><strong>{{ log.admin.username if log.admin else 'System' }}</strong></td>
+        <td><span class="badge badge-info">{{ log.action }}</span></td>
+        <td>{{ log.target_type }}</td>
+        <td style="font-family: monospace; font-size: 0.8125rem;">{{ log.target_id }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" style="text-align: center; color: var(--text-muted);">No audit logs recorded yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

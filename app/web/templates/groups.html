@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Groups Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Groups Management</h1>
+</div>
+
+{% if message %}
+<div class="alert alert-success">{{ message }}</div>
+{% endif %}
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Chat ID</th>
+        <th>Owner</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Polls Allowed</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in groups %}
+      <tr>
+        <td><strong>{{ g.title }}</strong></td>
+        <td style="font-family: monospace;">{{ g.chat_id }}</td>
+        <td>
+          {% if g.owner %}
+          <a href="/admin/users/{{ g.owner.id }}" style="color: var(--primary); text-decoration: none;">{{ g.owner.username }}</a>
+          {% else %}
+          <span style="color: var(--text-muted); font-style: italic;">Unlinked</span>
+          {% endif %}
+        </td>
+        <td>{{ g.chat_type }}</td>
+        <td>
+          {% if g.is_active %}
+          <span class="badge badge-success">Active</span>
+          {% else %}
+          <span class="badge badge-danger">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if g.can_send_polls %}
+          <span class="badge badge-success">Yes</span>
+          {% else %}
+          <span class="badge badge-warning">No</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display: flex; gap: 6px;">
+            {% if g.owner_id %}
+            <form method="POST" action="/admin/groups/{{ g.id }}/unlink">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Unlink group {{ g.title }} from its owner?');">Unlink</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="/admin/groups/{{ g.id }}/delete">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete group {{ g.title }} completely?');">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No groups found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

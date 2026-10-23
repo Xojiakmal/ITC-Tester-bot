@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ittestbot-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ittestuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ittestpass}
+      POSTGRES_DB: ${POSTGRES_DB:-ittestdb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ittestuser} -d ${POSTGRES_DB:-ittestdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ittestbot-network
+
+  app:
+    build: .
+    container_name: ittestbot-app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ittestuser}:${POSTGRES_PASSWORD:-ittestpass}@postgres:5432/${POSTGRES_DB:-ittestdb}
+      # The app must listen on the port that is mapped into the container (8000).
+      # PORT in .env only controls which host port is published via ${PORT} below.
+      PORT: 8000
+    ports:
+      - "${PORT:-8000}:8000"
+    networks:
+      - ittestbot-network
+
+volumes:
+  postgres_data:
+
+networks:
+  ittestbot-network:
+    driver: bridge

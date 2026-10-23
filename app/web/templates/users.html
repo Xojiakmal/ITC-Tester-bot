@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Users Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Users Management</h1>
+  <form method="GET" action="/admin/users" style="display: flex; gap: 8px;">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="Search by username or Telegram ID..." style="width: 300px;">
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if query %}
+    <a href="/admin/users" class="btn btn-secondary">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+{% if message %}
+<div class="alert alert-success">{{ message }}</div>
+{% endif %}
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Telegram ID</th>
+        <th>Timezone</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          <a href="/admin/users/{{ u.id }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+            {{ u.username }}
+          </a>
+        </td>
+        <td style="font-family: monospace;">{{ u.telegram_id }}</td>
+        <td>{{ u.timezone }}</td>
+        <td>
+          {% if u.is_blocked %}
+          <span class="badge badge-danger">Blocked</span>
+          {% else %}
+          <span class="badge badge-success">Active</span>
+          {% endif %}
+        </td>
+        <td style="color: var(--text-muted); font-size: 0.8125rem;">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <a href="/admin/users/{{ u.id }}" class="btn btn-secondary btn-sm">Details</a>
+
+            <!-- Block/Unblock -->
+            <form method="POST" action="/admin/users/{{ u.id }}/toggle-block">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              {% if u.is_blocked %}
+              <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Unblock user {{ u.username }}?');">Unblock</button>
+              {% else %}
+              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Block user {{ u.username }}?');">Block</button>
+              {% endif %}
+            </form>
+
+            <!-- Force Logout -->
+            <form method="POST" action="/admin/users/{{ u.id }}/force-logout">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Force logout {{ u.username }} across all sessions?');">Force Logout</button>
+            </form>
+
+            <!-- Delete -->
+            <form method="POST" action="/admin/users/{{ u.id }}/delete">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('PERMANENTLY DELETE user {{ u.username }} and all their groups, questions, and schedules? This cannot be undone!');">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No users found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
